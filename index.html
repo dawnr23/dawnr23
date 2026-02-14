@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영단어 플래피버드 - 초등 교과 영어 학습</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 시작 화면 -->
+        <div id="start-screen" class="screen active">
+            <h1>🐤 영단어 플래피버드</h1>
+            <p class="subtitle">초등 교과 영어 단어 학습 게임</p>
+
+            <div class="select-container">
+                <div class="select-group">
+                    <label for="grade-select">학년</label>
+                    <select id="grade-select">
+                        <option value="3">3학년</option>
+                        <option value="4">4학년</option>
+                        <option value="5">5학년</option>
+                        <option value="6">6학년</option>
+                    </select>
+                </div>
+
+                <div class="select-group">
+                    <label for="publisher-select">출판사</label>
+                    <select id="publisher-select">
+                        <option value="DK">동아출판</option>
+                        <option value="DA">대교</option>
+                        <option value="CJ">천재교육</option>
+                        <option value="YBMC">YBM (최희경)</option>
+                        <option value="YBMK">YBM (김혜리)</option>
+                        <option value="MN">미래엔</option>
+                        <option value="CJL">천재교육 (이재근)</option>
+                        <option value="CJK">천재교육 (김)</option>
+                        <option value="IC">아이스크림</option>
+                    </select>
+                </div>
+
+                <div class="select-group">
+                    <label for="lesson-select">단원</label>
+                    <select id="lesson-select">
+                        <!-- 동적으로 생성됨 -->
+                    </select>
+                </div>
+            </div>
+
+            <button id="start-btn" class="btn-primary">게임 시작</button>
+            <p id="loading-text" class="loading-text hidden">문제를 불러오는 중...</p>
+            <p id="error-text" class="error-text hidden"></p>
+
+            <div class="how-to-play">
+                <h3>게임 방법</h3>
+                <ul>
+                    <li>스페이스바 또는 화면 터치로 새를 점프시키세요</li>
+                    <li>파이프 사이를 통과하면 영단어 퀴즈가 나옵니다</li>
+                    <li>올바른 뜻을 선택하면 점수를 획득!</li>
+                    <li>틀리거나 파이프에 부딪히면 게임 오버</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="score-display">
+                    <span>점수: </span><span id="score">0</span>
+                </div>
+                <div class="word-count-display">
+                    <span>남은 단어: </span><span id="word-count">0</span>
+                </div>
+            </div>
+
+            <canvas id="game-canvas"></canvas>
+
+            <!-- 퀴즈 모달 -->
+            <div id="quiz-modal" class="modal hidden">
+                <div class="modal-content quiz-content">
+                    <h2 id="quiz-word" class="quiz-word"></h2>
+                    <p class="quiz-instruction">올바른 뜻을 선택하세요!</p>
+                    <div id="quiz-options" class="quiz-options">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게임 오버 화면 -->
+        <div id="gameover-screen" class="screen">
+            <h2>게임 오버!</h2>
+            <div class="final-score">
+                <p>최종 점수</p>
+                <span id="final-score">0</span>
+            </div>
+            <div class="stats">
+                <p>맞힌 단어: <span id="correct-count">0</span>개</p>
+                <p>틀린 단어: <span id="wrong-count">0</span>개</p>
+            </div>
+            <div class="gameover-buttons">
+                <button id="retry-btn" class="btn-primary">다시 하기</button>
+                <button id="home-btn" class="btn-secondary">처음으로</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="game.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

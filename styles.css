@@ -1,0 +1,347 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #87CEEB;
+    position: relative;
+    overflow: hidden;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* 시작 화면 */
+#start-screen {
+    background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+    justify-content: center;
+    gap: 20px;
+}
+
+#start-screen h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+}
+
+.subtitle {
+    color: #34495e;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.select-container {
+    background: rgba(255,255,255,0.9);
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.select-group {
+    margin-bottom: 15px;
+}
+
+.select-group:last-child {
+    margin-bottom: 0;
+}
+
+.select-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.select-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+}
+
+.select-group select:focus {
+    outline: none;
+    border-color: #2980b9;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.loading-text {
+    color: #2980b9;
+    font-style: italic;
+}
+
+.error-text {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.how-to-play {
+    background: rgba(255,255,255,0.85);
+    padding: 15px 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 10px;
+}
+
+.how-to-play h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.how-to-play ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.how-to-play li {
+    color: #34495e;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.how-to-play li::before {
+    content: "•";
+    position: absolute;
+    left: 5px;
+    color: #3498db;
+}
+
+/* 게임 화면 */
+#game-screen {
+    padding: 0;
+    background: #87CEEB;
+}
+
+.game-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.2);
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+#game-canvas {
+    display: block;
+    background: #87CEEB;
+}
+
+/* 퀴즈 모달 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 350px;
+    width: 90%;
+    animation: modalPop 0.3s ease;
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.quiz-word {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.quiz-instruction {
+    color: #7f8c8d;
+    margin-bottom: 20px;
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quiz-option {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quiz-option:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+.quiz-option.correct {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    animation: pulse 0.5s ease;
+}
+
+.quiz-option.wrong {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    animation: shake 0.5s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* 게임 오버 화면 */
+#gameover-screen {
+    background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+    justify-content: center;
+    gap: 25px;
+    color: white;
+}
+
+#gameover-screen h2 {
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.final-score {
+    background: rgba(255,255,255,0.2);
+    padding: 20px 40px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.final-score p {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.final-score span {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.stats {
+    font-size: 1.1rem;
+}
+
+.stats p {
+    margin-bottom: 8px;
+}
+
+.gameover-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 250px;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+    #start-screen h1 {
+        font-size: 1.6rem;
+    }
+
+    .quiz-word {
+        font-size: 2rem;
+    }
+}
