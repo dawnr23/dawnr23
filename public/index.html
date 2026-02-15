@@ -57,7 +57,7 @@
                     <li>스페이스바 또는 화면 터치로 새를 점프시키세요</li>
                     <li>파이프 사이를 통과하면 영단어 퀴즈가 나옵니다</li>
                     <li>올바른 뜻을 선택하면 점수를 획득!</li>
-                    <li>틀리거나 파이프에 부딪히면 게임 오버</li>
+                    <li>틀리면 하트가 줄어요! 3번 틀리면 게임 오버</li>
                 </ul>
             </div>
         </div>
@@ -68,12 +68,14 @@
                 <div class="score-display">
                     <span>점수: </span><span id="score">0</span>
                 </div>
+                <div class="hp-display" id="hp-display">❤️❤️❤️</div>
                 <div class="word-count-display">
                     <span>남은 단어: </span><span id="word-count">0</span>
                 </div>
             </div>
 
             <canvas id="game-canvas"></canvas>
+            <div id="damage-flash" class="damage-flash"></div>
 
             <!-- 퀴즈 모달 -->
             <div id="quiz-modal" class="modal hidden">
@@ -89,6 +91,7 @@
 
         <!-- 게임 오버 화면 -->
         <div id="gameover-screen" class="screen">
+            <div id="clear-effect" class="clear-effect hidden">🎉🏆🎉</div>
             <h2>게임 오버!</h2>
             <div class="final-score">
                 <p>최종 점수</p>

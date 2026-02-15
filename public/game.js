@@ -7,17 +7,14 @@ class FlappyBirdGame {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
-        // 캔버스 크기 설정
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-
         // 게임 설정
         this.gravity = options.gravity || 0.5;
-        this.jumpForce = options.jumpForce || -10;
-        this.pipeSpeed = options.pipeSpeed || 3;
+        this.jumpForce = options.jumpForce || -5;
+        this.fallSpeed = options.fallSpeed || 3;
+        this.pipeSpeed = options.pipeSpeed || 2;
         this.pipeGap = options.pipeGap || 180;
         this.pipeWidth = options.pipeWidth || 60;
-        this.pipeSpacing = options.pipeSpacing || 220;
+        this.pipeSpacing = options.pipeSpacing || 440;
 
         // 게임 상태
         this.isRunning = false;
@@ -25,6 +22,8 @@ class FlappyBirdGame {
         this.score = 0;
         this.correctCount = 0;
         this.wrongCount = 0;
+        this.maxHp = 3;
+        this.hp = this.maxHp;
 
         // 새 (플레이어)
         this.bird = {
@@ -48,6 +47,11 @@ class FlappyBirdGame {
         this.onQuiz = options.onQuiz || (() => {});
         this.onGameOver = options.onGameOver || (() => {});
         this.onWordCountChange = options.onWordCountChange || (() => {});
+        this.onHpChange = options.onHpChange || (() => {});
+
+        // 캔버스 크기 설정 (bird 초기화 후 호출)
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
 
         // 입력 이벤트 바인딩
         this.bindEvents();
@@ -98,11 +102,13 @@ class FlappyBirdGame {
     }
 
     init(questions) {
-        this.questions = this.shuffleArray([...questions]);
+        this.allQuestions = [...questions];
+        this.questions = this.shuffleArray([...questions]).slice(0, 8);
         this.currentQuestionIndex = 0;
         this.score = 0;
         this.correctCount = 0;
         this.wrongCount = 0;
+        this.hp = this.maxHp;
         this.pipes = [];
 
         this.bird.y = this.canvas.height / 2;
@@ -111,6 +117,7 @@ class FlappyBirdGame {
 
         this.onWordCountChange(this.questions.length);
         this.onScore(0);
+        this.onHpChange(this.hp, this.maxHp);
     }
 
     start() {
@@ -161,20 +168,28 @@ class FlappyBirdGame {
     }
 
     update() {
-        // 새 물리
-        this.bird.velocity += this.gravity;
+        // 새 물리 (등속 낙하: fallSpeed에 수렴)
+        if (this.bird.velocity < this.fallSpeed) {
+            this.bird.velocity += this.gravity;
+            if (this.bird.velocity > this.fallSpeed) {
+                this.bird.velocity = this.fallSpeed;
+            }
+        } else {
+            this.bird.velocity = this.fallSpeed;
+        }
         this.bird.y += this.bird.velocity;
 
         // 새 회전 (속도에 따라)
         this.bird.rotation = Math.min(Math.max(this.bird.velocity * 3, -30), 90);
 
-        // 천장/바닥 충돌
+        // 천장 충돌
         if (this.bird.y < 0) {
             this.bird.y = 0;
             this.bird.velocity = 0;
         }
 
-        if (this.bird.y + this.bird.height > this.canvas.height) {
+        // 바닥 충돌 → 게임오버
+        if (this.bird.y + this.bird.height > this.canvas.height - 25) {
             this.gameOver();
             return;
         }
@@ -190,22 +205,54 @@ class FlappyBirdGame {
             const pipe = this.pipes[i];
             pipe.x -= this.pipeSpeed;
 
-            // 화면 밖으로 나간 파이프 제거
-            if (pipe.x + this.pipeWidth < 0) {
+            // 화면 밖으로 나간 파이프 제거 (퀴즈 트리거 후에만)
+            if (pipe.x + this.pipeWidth < -this.pipeSpacing && pipe.quizTriggered) {
                 this.pipes.splice(i, 1);
                 continue;
             }
 
-            // 파이프 통과 체크
+            // 파이프 통과 마킹
             if (!pipe.passed && pipe.x + this.pipeWidth < this.bird.x) {
                 pipe.passed = true;
-                this.triggerQuiz();
             }
 
-            // 충돌 체크
+            // 기둥 사이 중간지점에서 퀴즈 출제
+            if (pipe.passed && !pipe.quizTriggered) {
+                const midGapX = pipe.x + this.pipeWidth + (this.pipeSpacing - this.pipeWidth) / 2;
+                if (midGapX < this.bird.x) {
+                    pipe.quizTriggered = true;
+                    this.triggerQuiz();
+                }
+            }
+
+            // 파이프 충돌 — HP 차감 + 물리적 벽
             if (this.checkCollision(pipe)) {
-                this.gameOver();
-                return;
+                if (!pipe.hitDamaged) {
+                    pipe.hitDamaged = true;
+                    this.hp--;
+                    this.onHpChange(this.hp, this.maxHp);
+                    if (this.hp <= 0) {
+                        this.gameOver();
+                        return;
+                    }
+                }
+
+                const birdRight = this.bird.x + this.bird.width;
+                const pipeLeft = pipe.x;
+                const pipeRight = pipe.x + this.pipeWidth;
+
+                if (birdRight > pipeLeft && this.bird.x < pipeRight) {
+                    if (this.bird.y < pipe.topHeight) {
+                        this.bird.y = pipe.topHeight;
+                        this.bird.velocity = 2;
+                    }
+                    if (this.bird.y + this.bird.height > pipe.bottomY) {
+                        this.bird.y = pipe.bottomY - this.bird.height;
+                        this.bird.velocity = this.jumpForce * 1.5;
+                    }
+                }
+            } else {
+                pipe.hitDamaged = false;
             }
         }
     }
@@ -260,7 +307,7 @@ class FlappyBirdGame {
 
         this.pause();
         const currentQuestion = this.questions[this.currentQuestionIndex];
-        const options = ARGongAPI.generateQuizOptions(currentQuestion, this.questions);
+        const options = ARGongAPI.generateQuizOptions(currentQuestion, this.allQuestions);
 
         this.onQuiz(currentQuestion, options, (isCorrect) => {
             if (isCorrect) {
@@ -269,8 +316,12 @@ class FlappyBirdGame {
                 this.onScore(this.score);
             } else {
                 this.wrongCount++;
-                this.gameOver();
-                return;
+                this.hp--;
+                this.onHpChange(this.hp, this.maxHp);
+                if (this.hp <= 0) {
+                    this.gameOver();
+                    return;
+                }
             }
 
             this.currentQuestionIndex++;

@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas: document.getElementById('game-canvas'),
         score: document.getElementById('score'),
         wordCount: document.getElementById('word-count'),
+        hpDisplay: document.getElementById('hp-display'),
         quizModal: document.getElementById('quiz-modal'),
         quizWord: document.getElementById('quiz-word'),
         quizOptions: document.getElementById('quiz-options'),
@@ -27,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
         correctCount: document.getElementById('correct-count'),
         wrongCount: document.getElementById('wrong-count'),
         retryBtn: document.getElementById('retry-btn'),
-        homeBtn: document.getElementById('home-btn')
+        homeBtn: document.getElementById('home-btn'),
+        clearEffect: document.getElementById('clear-effect'),
+        damageFlash: document.getElementById('damage-flash')
     };
 
     // 게임 상태
@@ -104,8 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     onScore: updateScore,
                     onQuiz: showQuiz,
                     onGameOver: handleGameOver,
-                    onWordCountChange: updateWordCount
+                    onWordCountChange: updateWordCount,
+                    onHpChange: updateHp
                 });
+                window._gameRef = game; // 디버깅/테스트용
             } else {
                 game.resize();
             }
@@ -169,6 +174,27 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.wordCount.textContent = count;
     }
 
+    let lastHp = 3;
+
+    function updateHp(hp, maxHp) {
+        elements.hpDisplay.textContent =
+            '\u2764\uFE0F'.repeat(hp) + '\uD83D\uDDA4'.repeat(maxHp - hp);
+
+        // HP가 감소했을 때 이펙트
+        if (hp < lastHp) {
+            // HP 흔들림
+            elements.hpDisplay.classList.remove('hp-hit');
+            void elements.hpDisplay.offsetWidth; // reflow로 애니메이션 리셋
+            elements.hpDisplay.classList.add('hp-hit');
+
+            // 화면 빨간 플래시
+            elements.damageFlash.classList.remove('active');
+            void elements.damageFlash.offsetWidth;
+            elements.damageFlash.classList.add('active');
+        }
+        lastHp = hp;
+    }
+
     function showQuiz(question, options, callback) {
         elements.quizWord.textContent = question.english;
         elements.quizOptions.innerHTML = '';
@@ -220,11 +246,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = gameoverScreen.querySelector('h2');
 
         if (result.cleared) {
-            title.textContent = '축하합니다!';
+            title.textContent = '\uD83C\uDF89 축하합니다! \uD83C\uDF89';
             gameoverScreen.style.background = 'linear-gradient(180deg, #27ae60 0%, #2ecc71 100%)';
+            elements.clearEffect.classList.remove('hidden');
         } else {
             title.textContent = '게임 오버!';
             gameoverScreen.style.background = 'linear-gradient(180deg, #e74c3c 0%, #c0392b 100%)';
+            elements.clearEffect.classList.add('hidden');
         }
 
         showScreen('gameover');
