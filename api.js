@@ -91,14 +91,49 @@ const ARGongAPI = {
      * @returns {Promise<Array>} 게임용 포맷된 단어 문제 배열
      */
     async getGameQuestions(grade, publisher, lesson) {
-        const allQuestions = await this.fetchQuestionPool(grade, publisher, lesson);
-        const wordQuestions = this.filterWordQuestions(allQuestions);
+        // 1) ARGong API 시도
+        try {
+            const allQuestions = await this.fetchQuestionPool(grade, publisher, lesson);
+            const wordQuestions = this.filterWordQuestions(allQuestions);
 
-        if (wordQuestions.length === 0) {
-            throw new Error('해당 단원에 단어 문제가 없습니다.');
+            if (wordQuestions.length >= 4) {
+                console.log('ARGong API에서 문제풀 로드 성공');
+                return this.formatForGame(wordQuestions);
+            }
+        } catch (error) {
+            console.warn('ARGong API 접근 실패, 내장 문제풀 사용:', error.message);
         }
 
-        return this.formatForGame(wordQuestions);
+        // 2) 내장 폴백 데이터 사용
+        return this.getFallbackQuestions(grade, lesson);
+    },
+
+    /**
+     * 내장 폴백 문제풀에서 문제를 가져옵니다.
+     */
+    getFallbackQuestions(grade, lesson) {
+        const gradeData = window.FallbackQuestions && window.FallbackQuestions[String(grade)];
+        if (!gradeData) {
+            throw new Error(`${grade}학년 내장 문제풀이 없습니다.`);
+        }
+
+        let lessonData = gradeData[String(lesson)];
+
+        // 해당 단원이 없으면 가장 가까운 단원 사용
+        if (!lessonData) {
+            const availableLessons = Object.keys(gradeData).map(Number).sort((a, b) => a - b);
+            const closestLesson = availableLessons.reduce((prev, curr) =>
+                Math.abs(curr - lesson) < Math.abs(prev - lesson) ? curr : prev
+            );
+            lessonData = gradeData[String(closestLesson)];
+            console.log(`${lesson}단원 없음, ${closestLesson}단원 문제풀 사용`);
+        }
+
+        if (!lessonData || lessonData.length < 4) {
+            throw new Error('문제가 너무 적습니다.');
+        }
+
+        return this.formatForGame(lessonData);
     },
 
     /**
