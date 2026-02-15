@@ -4,8 +4,8 @@
  */
 
 const ARGongAPI = {
-    // 베이스 URL
-    BASE_URL: 'https://argame3.blob.core.windows.net/questionpool-jsons',
+    // Worker 프록시 경로를 통해 Azure Blob에 접근
+    BASE_URL: '/api/questions',
 
     // 출판사 정보
     publishers: {
@@ -36,7 +36,7 @@ const ARGongAPI = {
      * @returns {Promise<Array>} 문제 배열
      */
     async fetchQuestionPool(grade, publisher, lesson) {
-        const url = `${this.BASE_URL}/activity/${publisher}-${grade}-${lesson}.json`;
+        const url = `${this.BASE_URL}/${publisher}/${grade}/${lesson}`;
 
         try {
             const response = await fetch(url);
@@ -78,7 +78,7 @@ const ARGongAPI = {
             english: q.content.trim(),
             korean: q.kor.trim(),
             topic: q.Topic || '',
-            image: q.img ? `${this.BASE_URL}/activity/images/${q.img}` : null,
+            image: q.img ? `https://argame3.blob.core.windows.net/questionpool-jsons/activity/images/${q.img}` : null,
             audio: q.audio || null
         }));
     },
