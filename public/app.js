@@ -53,13 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.retryBtn.addEventListener('click', retryGame);
         elements.homeBtn.addEventListener('click', goHome);
 
-        // 게임 인스턴스 생성
-        game = new FlappyBirdGame(elements.canvas, {
-            onScore: updateScore,
-            onQuiz: showQuiz,
-            onGameOver: handleGameOver,
-            onWordCountChange: updateWordCount
-        });
+        // 게임 인스턴스는 화면 전환 후 생성하므로 여기서는 생성하지 않음
     }
 
     function updateLessonOptions() {
@@ -98,8 +92,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('문제가 너무 적습니다. (최소 4개 필요)');
             }
 
-            // 게임 시작
+            // 1) 먼저 게임 화면으로 전환
             showScreen('game');
+
+            // 2) 레이아웃 반영을 기다린 후 게임 시작
+            await waitForLayout();
+
+            // 3) 게임 인스턴스 생성 또는 리사이즈
+            if (!game) {
+                game = new FlappyBirdGame(elements.canvas, {
+                    onScore: updateScore,
+                    onQuiz: showQuiz,
+                    onGameOver: handleGameOver,
+                    onWordCountChange: updateWordCount
+                });
+            } else {
+                game.resize();
+            }
+
+            // 4) 게임 초기화 및 시작
             game.init(currentQuestions);
             game.start();
 
@@ -107,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('게임 시작 실패:', error);
             elements.errorText.textContent = error.message || '문제를 불러오는데 실패했습니다.';
             elements.errorText.classList.remove('hidden');
+            showScreen('start');
         } finally {
             elements.startBtn.disabled = false;
             elements.loadingText.classList.add('hidden');
@@ -115,11 +127,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function retryGame() {
         showScreen('game');
-        game.init(currentQuestions);
-        game.start();
+
+        // 레이아웃 반영 후 게임 재시작
+        requestAnimationFrame(() => {
+            if (game) {
+                game.resize();
+                game.init(currentQuestions);
+                game.start();
+            }
+        });
     }
 
     function goHome() {
+        if (game) {
+            game.stop();
+        }
         showScreen('start');
     }
 
@@ -128,10 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
             screen.classList.remove('active');
         });
         screens[screenName].classList.add('active');
+    }
 
-        if (screenName === 'game') {
-            game.resize();
-        }
+    /** 브라우저 레이아웃 반영을 기다립니다 */
+    function waitForLayout() {
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(resolve);
+            });
+        });
     }
 
     function updateScore(score) {
@@ -193,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = gameoverScreen.querySelector('h2');
 
         if (result.cleared) {
-            title.textContent = '🎉 축하합니다!';
+            title.textContent = '축하합니다!';
             gameoverScreen.style.background = 'linear-gradient(180deg, #27ae60 0%, #2ecc71 100%)';
         } else {
             title.textContent = '게임 오버!';

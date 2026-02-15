@@ -57,14 +57,20 @@ class FlappyBirdGame {
     }
 
     resize() {
-        const container = this.canvas.parentElement;
-        const maxWidth = Math.min(container.clientWidth, 480);
-        const height = window.innerHeight - 50; // 헤더 높이 제외
+        // #app 컨테이너 또는 viewport 기준으로 크기 계산
+        const appEl = document.getElementById('app');
+        const availableWidth = appEl ? appEl.clientWidth : window.innerWidth;
+        const canvasWidth = Math.min(Math.max(availableWidth, 320), 480);
+        const canvasHeight = Math.max(window.innerHeight - 50, 400);
 
-        this.canvas.width = maxWidth;
-        this.canvas.height = height;
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
 
-        this.bird.y = height / 2;
+        // CSS 크기도 명시적으로 설정
+        this.canvas.style.width = canvasWidth + 'px';
+        this.canvas.style.height = canvasHeight + 'px';
+
+        this.bird.y = canvasHeight / 2;
     }
 
     bindEvents() {
@@ -144,8 +150,12 @@ class FlappyBirdGame {
     gameLoop() {
         if (!this.isRunning || this.isPaused) return;
 
-        this.update();
-        this.draw();
+        try {
+            this.update();
+            this.draw();
+        } catch (error) {
+            console.error('게임 루프 오류:', error);
+        }
 
         this.animationId = requestAnimationFrame(() => this.gameLoop());
     }
