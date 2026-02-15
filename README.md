@@ -6,7 +6,7 @@
 
 ---
 
-## 이 프로젝트는 100% Claude Code로 만들어졌습니다
+## 이 프로젝트는 100% Claude Code로 만들어졌습니다 (이 문서 포함)
 
 이 프로젝트는 **한 줄의 코드도 직접 작성하지 않고**, [Claude Code](https://claude.ai/claude-code)(Anthropic의 AI 코딩 에이전트)에게 **자연어 지시만으로** 처음부터 끝까지 구현되었습니다.
 
