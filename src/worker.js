@@ -4,8 +4,10 @@
  */
 
 const AZURE_ACCOUNT = 'argame3';
-const AZURE_ACCESS_KEY = 'DOq0ZcQkwZZQMwEaLCnjAas7n8qdyFPjKCJV6mny4ARj+lv282ruiKg0xqe1V1NLVAxMsKC1tBZf+AStdok4Vg==';
 const AZURE_API_VERSION = '2020-10-02';
+
+// AZURE_ACCESS_KEY는 Cloudflare Workers 환경변수(Secret)에서 주입됩니다.
+// Cloudflare 대시보드 → Workers → dawnr23 → Settings → Variables and Secrets
 
 /**
  * HMAC-SHA256 서명 생성
@@ -22,7 +24,7 @@ async function createSignature(stringToSign, key) {
 /**
  * Azure Blob Storage SharedKey 인증 헤더 생성
  */
-async function createAzureAuthHeaders(method, container, blobPath) {
+async function createAzureAuthHeaders(method, container, blobPath, accessKey) {
     const now = new Date().toUTCString();
 
     const canonicalizedHeaders = `x-ms-date:${now}\nx-ms-version:${AZURE_API_VERSION}\n`;
@@ -44,7 +46,7 @@ async function createAzureAuthHeaders(method, container, blobPath) {
         canonicalizedHeaders + canonicalizedResource
     ].join('\n');
 
-    const signature = await createSignature(stringToSign, AZURE_ACCESS_KEY);
+    const signature = await createSignature(stringToSign, accessKey);
 
     return {
         'x-ms-date': now,
@@ -56,8 +58,8 @@ async function createAzureAuthHeaders(method, container, blobPath) {
 /**
  * Azure Blob에서 문제풀 JSON 가져오기
  */
-async function fetchFromAzure(container, blobPath) {
-    const headers = await createAzureAuthHeaders('GET', container, blobPath);
+async function fetchFromAzure(container, blobPath, accessKey) {
+    const headers = await createAzureAuthHeaders('GET', container, blobPath, accessKey);
     const url = `https://${AZURE_ACCOUNT}.blob.core.windows.net/${container}/${blobPath}`;
 
     const response = await fetch(url, { headers });
@@ -99,7 +101,7 @@ export default {
             const blobPath = `activity/${publisher}-${grade}-${lesson}.json`;
 
             try {
-                const azureResponse = await fetchFromAzure(container, blobPath);
+                const azureResponse = await fetchFromAzure(container, blobPath, env.AZURE_ACCESS_KEY);
                 const data = await azureResponse.text();
 
                 return new Response(data, {
