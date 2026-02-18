@@ -4,7 +4,8 @@
  */
 
 const AZURE_ACCOUNT = 'argame3';
-const AZURE_ACCESS_KEY = 'DOq0ZcQkwZZQMwEaLCnjAas7n8qdyFPjKCJV6mny4ARj+lv282ruiKg0xqe1V1NLVAxMsKC1tBZf+AStdok4Vg==';
+// AZURE_ACCESS_KEY는 Cloudflare Workers Secret으로 주입 (env.AZURE_ACCESS_KEY)
+// 배포 시: npx wrangler secret put AZURE_ACCESS_KEY
 const AZURE_API_VERSION = '2020-10-02';
 
 /**
@@ -22,7 +23,7 @@ async function createSignature(stringToSign, key) {
 /**
  * Azure Blob Storage SharedKey 인증 헤더 생성
  */
-async function createAzureAuthHeaders(method, container, blobPath) {
+async function createAzureAuthHeaders(method, container, blobPath, accessKey) {
     const now = new Date().toUTCString();
 
     const canonicalizedHeaders = `x-ms-date:${now}\nx-ms-version:${AZURE_API_VERSION}\n`;
@@ -44,7 +45,7 @@ async function createAzureAuthHeaders(method, container, blobPath) {
         canonicalizedHeaders + canonicalizedResource
     ].join('\n');
 
-    const signature = await createSignature(stringToSign, AZURE_ACCESS_KEY);
+    const signature = await createSignature(stringToSign, accessKey);
 
     return {
         'x-ms-date': now,
@@ -56,8 +57,8 @@ async function createAzureAuthHeaders(method, container, blobPath) {
 /**
  * Azure Blob에서 문제풀 JSON 가져오기
  */
-async function fetchFromAzure(container, blobPath) {
-    const headers = await createAzureAuthHeaders('GET', container, blobPath);
+async function fetchFromAzure(container, blobPath, accessKey) {
+    const headers = await createAzureAuthHeaders('GET', container, blobPath, accessKey);
     const url = `https://${AZURE_ACCOUNT}.blob.core.windows.net/${container}/${blobPath}`;
 
     const response = await fetch(url, { headers });
@@ -99,7 +100,14 @@ export default {
             const blobPath = `activity/${publisher}-${grade}-${lesson}.json`;
 
             try {
-                const azureResponse = await fetchFromAzure(container, blobPath);
+                const accessKey = env.AZURE_ACCESS_KEY;
+                if (!accessKey) {
+                    return new Response(JSON.stringify({ error: 'AZURE_ACCESS_KEY가 설정되지 않았습니다.' }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                const azureResponse = await fetchFromAzure(container, blobPath, accessKey);
                 const data = await azureResponse.text();
 
                 return new Response(data, {
