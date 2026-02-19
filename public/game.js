@@ -9,7 +9,7 @@ class FlappyBirdGame {
 
         // 게임 설정
         this.gravity = options.gravity || 0.5;
-        this.jumpForce = options.jumpForce || -5;
+        this.jumpForce = options.jumpForce || -6.5;
         this.fallSpeed = options.fallSpeed || 3;
         this.pipeSpeed = options.pipeSpeed || 2;
         this.pipeGap = options.pipeGap || 180;
