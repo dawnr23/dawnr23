@@ -1,0 +1,30 @@
+name: Claude Code Issue Handler
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  handle-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            이 GitHub 이슈를 분석하고 해결해주세요.
+
+            이슈 제목: ${{ github.event.issue.title }}
+            이슈 내용: ${{ github.event.issue.body }}
+
+            CLAUDE.md를 참고하여 프로젝트 컨텍스트를 파악하고,
+            코드를 수정한 후 PR을 생성해주세요.
+            변경 후 테스트도 확인해주세요.
