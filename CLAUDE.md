@@ -29,7 +29,7 @@
 | src/worker.js | Azure Blob 인증 프록시 (SharedKey, 시크릿 하드코딩됨) |
 
 ## 현재 게임 밸런스
-- gravity: 0.5, jumpForce: -5, fallSpeed: 3
+- gravity: 0.5, jumpForce: -8, fallSpeed: 3
 - pipeSpeed: 2, pipeGap: 180, pipeSpacing: 440
 - HP: 3목숨, 문제 수: 8개 (랜덤 선택)
 - 아래 기둥 충돌 시 jumpForce*1.5 반발력
