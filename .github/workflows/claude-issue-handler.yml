@@ -20,12 +20,24 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          additional_permissions: |
+            Bash(git checkout -b *)
+            Bash(git add *)
+            Bash(git commit *)
+            Bash(git push *)
+            Bash(gh pr create *)
+            Bash(node *)
+            Bash(npm *)
+            Edit(*)
+            Write(*)
           prompt: |
             이 GitHub 이슈를 분석하고 해결해주세요.
 
             이슈 제목: ${{ github.event.issue.title }}
             이슈 내용: ${{ github.event.issue.body }}
 
-            CLAUDE.md를 참고하여 프로젝트 컨텍스트를 파악하고,
-            코드를 수정한 후 PR을 생성해주세요.
-            변경 후 테스트도 확인해주세요.
+            CLAUDE.md를 참고하여 프로젝트 컨텍스트를 파악하고:
+            1. 이슈와 관련된 코드를 찾아 수정하세요
+            2. 새 브랜치를 만들고 커밋하세요
+            3. PR을 생성하세요
+            4. 이슈에 결과를 코멘트로 남겨주세요
